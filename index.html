@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>WebXR 1:70 El Takipli Gezinti — Quest 3</title>
+  <meta name="description" content="Meta Quest 3 native hand tracking ve masaüstü MediaPipe ile kontrolcüsüz, 1:70 ölçekli mimari WebXR gezintisi.">
+  <link rel="stylesheet" href="./css/style.css">
+  <!-- Sabit sürümlü CDN import haritası. Göreli yollar (./js/...) GitHub Pages alt dizinlerinde de çalışır. -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="module" src="./js/main.js"></script>
+</head>
+<body>
+  <div id="scene" aria-label="3B sahne"></div>
+
+  <header class="toolbar" role="toolbar" aria-label="Kontroller">
+    <div class="brand">
+      <strong>1:70 Walkthrough</strong>
+      <span>WebXR · el takibi</span>
+    </div>
+    <button id="btn-vr" class="primary" type="button">Enter VR</button>
+    <button id="btn-start-cam" type="button">Start Camera</button>
+    <button id="btn-stop-cam" type="button" disabled>Stop Camera</button>
+    <button id="btn-reset" type="button">Reset Position</button>
+    <label class="field">
+      <span>Ölçek</span>
+      <select id="scale-select">
+        <option value="human">1:70 — insan gözü</option>
+        <option value="model">1:1 — maket boyutu</option>
+      </select>
+    </label>
+    <label class="field check" title="Kapalıyken dönüş, yürümeden önceliklidir">
+      <input id="walk-turn" type="checkbox">
+      <span>Yürürken dönmeye izin ver</span>
+    </label>
+  </header>
+
+  <aside class="debug" aria-label="Debug paneli">
+    <h2>Durum</h2>
+    <dl>
+      <dt>XR oturumu</dt><dd id="dbg-xr">kontrol ediliyor…</dd>
+      <dt>Referans alanı</dt><dd id="dbg-ref">—</dd>
+      <dt>El takibi</dt><dd id="dbg-ht">kapalı</dd>
+      <dt>Kamera</dt><dd id="dbg-cam">stopped</dd>
+      <dt>Algılanan el</dt><dd id="dbg-hand">yok</dd>
+      <dt>Aktif pinch</dt><dd id="dbg-pinch">—</dd>
+      <dt>Pinch oranları</dt><dd id="dbg-ratios" class="mono">—</dd>
+      <dt>Komut kaynağı</dt><dd id="dbg-src">—</dd>
+      <dt>İleri hız</dt><dd id="dbg-speed">0</dd>
+      <dt>Rotasyon hızı</dt><dd id="dbg-turn">0</dd>
+      <dt>Ölçek</dt><dd id="dbg-scale">1:70</dd>
+      <dt>Göz yüksekliği</dt><dd id="dbg-eye">—</dd>
+      <dt>FPS</dt><dd id="dbg-fps">—</dd>
+    </dl>
+    <details>
+      <summary>Jestler</summary>
+      <ul class="legend">
+        <li><b>Başparmak + işaret</b> → ileri yürü</li>
+        <li><b>Başparmak + serçe</b> → sağa dön</li>
+        <li><b>Başparmak + yüzük</b> → sola dön</li>
+        <li><b>Pinch yok / el kayıp</b> → dur</li>
+        <li class="muted">Başparmak + orta parmak eşlenmemiştir ve yok sayılır. Oranlar: i=işaret, o=orta, y=yüzük, s=serçe.</li>
+        <li class="muted">Debug: W/↑ ileri, A/← sola, D/→ sağa, R sıfırla, fare sürükle = bak</li>
+      </ul>
+    </details>
+  </aside>
+
+  <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+
+  <div id="cam-wrap" class="cam" hidden>
+    <video id="cam-video" playsinline muted></video>
+    <canvas id="cam-overlay"></canvas>
+    <div class="cam-loading">MediaPipe yükleniyor…</div>
+  </div>
+
+  <div id="consent" class="modal" role="dialog" aria-modal="true" aria-labelledby="consent-title" hidden>
+    <div class="modal-card">
+      <h2 id="consent-title">Kamera izni</h2>
+      <p>El hareketlerini algılamak için web kameranız kullanılacak. Görüntü <b>yalnızca bu tarayıcıda</b> MediaPipe ile işlenir; hiçbir sunucuya gönderilmez veya kaydedilmez.</p>
+      <p class="muted">Devam ederseniz tarayıcı ayrıca kendi kamera izin penceresini gösterecektir. MediaPipe kütüphanesi ve el modeli CDN'den (jsDelivr, Google Storage) indirilir.</p>
+      <div class="modal-actions">
+        <button id="consent-cancel" type="button">Vazgeç</button>
+        <button id="consent-ok" class="primary" type="button">Kamerayı başlat</button>
+      </div>
+    </div>
+  </div>
+
+  <noscript>Bu uygulama JavaScript gerektirir.</noscript>
+</body>
+</html>
